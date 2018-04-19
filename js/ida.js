@@ -1,5 +1,5 @@
  $(function(){
-        csmapi.set_endpoint ('http://test.iottalk.tw:9999');
+        csmapi.set_endpoint ('http://XXX.XXX.XXX.XXX:9999');
         var profile = {
 		    'dm_name': 'Dummy_Device',          
 			'idf_list':[Dummy_Sensor],
