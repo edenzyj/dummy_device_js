@@ -11,9 +11,10 @@ const dai = function (profile, ida) {
         return s() + s() + s();
     })();
 
-    if (profile.is_sim == undefined){
-        profile.is_sim = false;
-    }
+    if (profile.is_sim == undefined)   profile.is_sim = false;
+    if (profile.idf_list == undefined) profile.idf_list = [];
+    if (profile.odf_list == undefined) profile.odf_list = [];	
+    
     profile['df_list']=[];
     for (var i = 0; i < profile.odf_list.length; i++) {
         odf_name = profile.odf_list[i].name;
