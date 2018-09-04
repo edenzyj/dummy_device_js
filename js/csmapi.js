@@ -17,7 +17,7 @@ var csmapi = (function () {
             contentType:"application/json; charset=utf-8",
         }).done(function (result) {
             if (callback) {
-                callback(true, result.password);
+                callback(true, result.d_name, result.password);
             }
         }).fail(function () {
             if (callback) {
