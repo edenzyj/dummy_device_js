@@ -32,18 +32,18 @@ var dan = (function () {
     }
 
     function register (endpoint, profile, callback) {
-        profile['d_name'] =
-                (Math.floor(Math.random() * 99)).toString() + '.' + profile['dm_name'];
-                 //profile['dm_name'] +'-'+ _mac_addr.slice(_mac_addr.length - 4);
+        //profile['d_name'] = (Math.floor(Math.random() * 99)).toString() + '.' + profile['dm_name'];
+                 
         _profile = profile;
         csmapi.set_endpoint(endpoint);
 
         var retry_count = 0;
-        function register_callback (result, password = '') {
+        function register_callback (result, d_name, password = '') {
             if (result) {
                 if (!_registered) {
                     _registered = true;
-                    _password = password;			
+                    _password = password;
+                    profile.d_name = d_name;
 		    _idf_list = profile['idf_list'].slice();
 		    _odf_list = profile['odf_list'].slice();
 		    _df_list = profile['df_list'].slice();
