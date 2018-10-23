@@ -3,7 +3,8 @@
         var profile = {
 		    'dm_name': 'Dummy_Device',          
 			'idf_list':[Dummy_Sensor],
-			'odf_list':[Dummy_Control],			
+			'odf_list':[Dummy_Control],
+		        'd_name': undefined,
         };
 		
         function Dummy_Sensor(){
@@ -15,7 +16,9 @@
         }
       
 /*******************************************************************/                
-        function ida_init(){}
+        function ida_init(){
+	    console.log(profile.d_name);
+	}
         var ida = {
             'ida_init': ida_init,
         }; 
