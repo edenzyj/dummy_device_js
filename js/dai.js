@@ -40,7 +40,7 @@ const dai = function (profile, ida) {
 	
     function push(idf_name) {
 	    data = idf_func[idf_name]();
-            dan.push(idf_name, data);
+	    if (data!=undefined) dan.push(idf_name, data);
 	}
 	
     function pull(odf_name, data) {
