@@ -13,7 +13,6 @@
     };
 		
     function Dummy_Sensor(){
-        
         return Math.random();  // return undefined; // if no data to send
     }
 
