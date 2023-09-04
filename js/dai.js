@@ -1,7 +1,10 @@
 const dai = function (profile, ida) {
     var odf_func = {};
 	var idf_func = {};
-	
+	var mqtturl = ida.mqtt_url;
+    var user = ida.mqtt_user;
+    var password = ida.mqtt_password;
+    var mqtt_client = undefined;
     var mac_addr = (function () {
         function s () {
             return Math.floor((1 + Math.random()) * 0x10000)
@@ -11,10 +14,16 @@ const dai = function (profile, ida) {
         return s() + s() + s();
     })();
 
-    if (profile.is_sim == undefined)   profile.is_sim = false;
+    csmapi.set_endpoint(ida.iottalk_url);
+
+    if (mqtturl != undefined){
+        profile['mqtt_enable'] = true;
+    }
+
+    if (profile.is_sim == undefined) profile.is_sim = false;
     if (profile.idf_list == undefined) profile.idf_list = [];
     if (profile.odf_list == undefined) profile.odf_list = [];	
-    
+
     profile['df_list']=[];
     for (var i = 0; i < profile.odf_list.length; i++) {
         odf_name = profile.odf_list[i].name;
@@ -37,10 +46,24 @@ const dai = function (profile, ida) {
 		profile['df_list'].push(idf_name);
         console.log(idf_name);
     }	
+
+    function mqtt_publish(mac_addr, idf_name, data){
+        if(!Array.isArray(data)) data = [data];
+        topic = [mac_addr, idf_name].join('//');
+        payload = {"samples":[[(moment().format('YYYY-MM-DD h:mm:ss')).toString(), data]]};
+        sample = JSON.stringify(payload);
+        mqtt_client.publish(topic, sample, {qos: 0, retain: false }, function (error){
+            if(error) console.log(error);
+            else console.log([topic, sample].join(': '));
+        });
+    }
 	
-    function push(idf_name) {
-	    data = idf_func[idf_name]();
-	    if (data!=undefined) dan.push(idf_name, data);
+    function push(idf_name, data=undefined){
+        if (data == undefined) data = idf_func[idf_name]();
+        if (data != undefined){
+            if (mqtturl == undefined) dan.push(idf_name, data);
+            else mqtt_publish(mac_addr, idf_name, data);
+        }
 	}
 	
     function pull(odf_name, data) {
@@ -63,11 +86,54 @@ const dai = function (profile, ida) {
         }
     }
 
+
+    if (mqtturl != undefined){
+        const options = {
+          clean: true, 
+          connectTimeout: 4000, 
+          clientId: mac_addr,
+          username: user,
+          password: password,
+        }
+
+        mqtt_client = mqtt.connect(mqtturl, options);
+
+        mqtt_client.on('connect', function(connack){
+            console.log('MQTT Broker connected.');
+            profile.odf_list.forEach(function(odf){
+                var topic = [mac_addr, odf].join('//');
+                mqtt_client.subscribe(topic);
+                console.log('subscribe:', topic);
+            });
+        });
+
+        mqtt_client.on('message', function (topic, message, packet) {
+            data = JSON.parse(message.toString());
+            odf_name = topic.split('//')[1];
+            odf_data = data['samples'][0][1];
+            console.log(odf_name, odf_data);
+            odf_func[odf_name](odf_data);
+        });
+
+        mqtt_client.on('error', function(err){
+            console.log('mqtt error:', err);
+            mqtt_client.end();
+            mqtt_client.reconnect();
+        });
+
+        mqtt_client.on('disconnect', function (packet) {
+            console.log(packet);
+            mqtt_client.reconnect();
+        });
+    }
+
+
     function init_callback (result) {
         console.log('register:', result);
         document.title = profile.d_name;
-        ida.ida_init();
+        ida.ida_init(mac_addr);
     }
+
 
     function deregisterCallback (result) {
         console.log('deregister:', result);
@@ -81,6 +147,6 @@ const dai = function (profile, ida) {
     window.onbeforeunload = deregister;
     window.onclose = deregister;
     window.onpagehide = deregister;
-
-    dan.init(push, pull, csmapi.get_endpoint(), mac_addr, profile, init_callback);
+    
+    dan.init(push, pull, csmapi.get_endpoint(), mac_addr, profile, init_callback, mqtturl, ida.exec_interval);
 };
