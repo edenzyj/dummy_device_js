@@ -15,12 +15,14 @@ var dan = (function () {
     var _suspended = false;
     var _ctl_timestamp = '';
     var _password = '';	
+    var _mqtturl = undefined;
 
-    function init (push, pull, endpoint, mac_addr, profile, callback) {
+    function init (push, pull, endpoint, mac_addr, profile, callback, mqtturl, exec_interval=500) {
         _pull = pull;
-	_push = push;
+    	_push = push;
         _mac_addr = mac_addr;
-
+        _mqtturl = mqtturl;
+        POLLING_INTERVAL = exec_interval;
         function init_callback (result) {
             if (result) {
                 callback(csmapi.get_endpoint());
@@ -33,7 +35,6 @@ var dan = (function () {
 
     function register (endpoint, profile, callback) {
         //profile['d_name'] = (Math.floor(Math.random() * 99)).toString() + '.' + profile['dm_name'];
-                 
         _profile = profile;
         csmapi.set_endpoint(endpoint);
 
@@ -43,7 +44,7 @@ var dan = (function () {
                 if (!_registered) {
                     _registered = true;
                     _password = password;
-                    profile.d_name = d_name;
+		    profile.d_name = d_name;
 		    _idf_list = profile['idf_list'].slice();
 		    _odf_list = profile['odf_list'].slice();
 		    _df_list = profile['df_list'].slice();
@@ -95,12 +96,12 @@ var dan = (function () {
         csmapi.pull(_mac_addr, _password,'__Ctl_O__', pull_ctl_callback);
     }
 
-    function pull_odf (index) {
+    function pull_odf(index) {
 		if (!_registered) {
             return;
         }
 
-        if (_suspended || index >= _odf_list.length) {
+        if (_suspended || index >= _odf_list.length || _mqtturl != null) {
             setTimeout(push_idf, POLLING_INTERVAL, 0);
             return;
         }
@@ -133,13 +134,13 @@ var dan = (function () {
             setTimeout(pull_ctl, POLLING_INTERVAL);
             return;
         }
-	    
+
         var _idf_name = _idf_list[index];
         if (!_df_selected[_idf_name]) {
             push_idf(index + 1);
             return;
         }
-	    
+
         _push(_idf_list[index]);
         setTimeout(push_idf, POLLING_INTERVAL, index + 1);
     }	
@@ -177,15 +178,18 @@ var dan = (function () {
         return true;
     }
 
+
     function push(idf_name, data, callback) {
-		if(!Array.isArray(data))
-			data = [data];
+        if(!Array.isArray(data)) data = [data];
+
         if (idf_name == 'Control') {
             idf_name = '__Ctl_I__';
-        }
-        //_df_is_odf[idf_name] = false;
-        if (idf_name == '__Ctl_I__' || _df_selected[idf_name]) {
             csmapi.push(_mac_addr, _password, idf_name, data, callback);
+        }
+
+        if (_df_selected[idf_name]){
+            if (_mqtturl == undefined) csmapi.push(_mac_addr, _password, idf_name, data, callback);
+            else _push(idf_name, data);
         }
     }
 
