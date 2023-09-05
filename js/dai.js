@@ -98,6 +98,12 @@ const dai = function (profile, ida) {
 
         mqtt_client = mqtt.connect(mqtturl, options);
 
+        mqtt_client.on('error', function(err){
+            console.log('mqtt error:', err);
+            mqtt_client.end();
+            mqtt_client.reconnect();
+        });
+
         mqtt_client.on('connect', function(connack){
             console.log('MQTT Broker connected.');
             profile.odf_list.forEach(function(odf){
@@ -113,12 +119,6 @@ const dai = function (profile, ida) {
             odf_data = data['samples'][0][1];
             console.log(odf_name, odf_data);
             odf_func[odf_name](odf_data);
-        });
-
-        mqtt_client.on('error', function(err){
-            console.log('mqtt error:', err);
-            mqtt_client.end();
-            mqtt_client.reconnect();
         });
 
         mqtt_client.on('disconnect', function (packet) {
@@ -149,4 +149,12 @@ const dai = function (profile, ida) {
     window.onpagehide = deregister;
     
     dan.init(push, pull, csmapi.get_endpoint(), mac_addr, profile, init_callback, mqtturl, ida.exec_interval);
+
+    function switch_to_http(){
+        mqtt_client.end();
+        mqtturl = undefined;
+        profile['mqtt_enable'] = false;
+        dan.init(push, pull, csmapi.get_endpoint(), mac_addr, profile, init_callback, undefined, ida.exec_interval);
+    }
+    http.init(switch_to_http);
 };
