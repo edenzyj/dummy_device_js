@@ -153,7 +153,7 @@ const dai = function (profile, ida) {
     function switch_to_http(){
         mqtt_client.end();
         mqtturl = undefined;
-        profile['mqtt_enable'] = true;
+        profile['mqtt_enable'] = false;
         dan.init(push, pull, csmapi.get_endpoint(), mac_addr, profile, init_callback, undefined, ida.exec_interval);
     }
     http.init(switch_to_http);
