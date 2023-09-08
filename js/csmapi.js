@@ -1,5 +1,5 @@
 var csmapi = (function () {
-    var ENDPOINT = null;
+    var ENDPOINT = undefined;
 
     function set_endpoint (endpoint) {
         ENDPOINT = endpoint;
@@ -81,6 +81,18 @@ var csmapi = (function () {
         });
     }
 
+    function get_alias(device_id, df_name, callback){
+        var alias;
+        var ajax_obj = $.ajax({
+            url: ENDPOINT +'/get_alias/' + device_id+ '/' + df_name,
+            type: 'GET',
+            data: {alias},
+        }).done(function(alias){
+          if(typeof callback === 'function') callback(df_name, alias['alias_name'][0]);
+        });
+    }
+
+    
     return {
         'set_endpoint': set_endpoint,
         'get_endpoint': get_endpoint,
@@ -88,5 +100,6 @@ var csmapi = (function () {
         'deregister': deregister,
         'pull': pull,
         'push': push,
+        'get_alias': get_alias,
     };
 })();
