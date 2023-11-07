@@ -131,7 +131,7 @@ const dai = function (profile, ida) {
     function init_callback (result) {
         console.log('register:', result);
         document.title = profile.d_name;
-        ida.ida_init(mac_addr);
+        ida.sa_init(mac_addr);
     }
 
 
