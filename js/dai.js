@@ -1,9 +1,9 @@
-const dai = function (profile, ida) {
+const dai = function (profile, sa) {
     var odf_func = {};
     var idf_func = {};
-    var mqtturl = ida.mqtt_url;
-    var user = ida.mqtt_user;
-    var password = ida.mqtt_password;
+    var mqtturl = sa.mqtt_url;
+    var user = sa.mqtt_user;
+    var password = sa.mqtt_password;
     var mqtt_client = undefined;
     var mac_addr = (function () {
         function s () {
@@ -14,7 +14,7 @@ const dai = function (profile, ida) {
         return s() + s() + s();
     })();
 
-    csmapi.set_endpoint(ida.iottalk_url);
+    csmapi.set_endpoint(sa.iottalk_url);
 
     if (mqtturl != undefined){
         profile['mqtt_enable'] = true;
@@ -73,11 +73,11 @@ const dai = function (profile, ida) {
                 dan.push('Control', ['SET_DF_STATUS_RSP', data[1]], function (res) {});
                 break;
             case 'RESUME':
-                ida.suspended = false;
+                sa.suspended = false;
                 dan.push('Control', ['RESUME_RSP', ['OK']], function (res) {});
                 break;
             case 'SUSPEND':
-                ida.suspended = true;
+                sa.suspended = true;
                 dan.push('Control', ['SUSPEND_RSP', ['OK']], function (res) {});
                 break;
             }
@@ -131,7 +131,7 @@ const dai = function (profile, ida) {
     function init_callback (result) {
         console.log('register:', result);
         document.title = profile.d_name;
-        ida.sa_init(mac_addr);
+        sa.sa_init(mac_addr);
     }
 
 
@@ -148,13 +148,13 @@ const dai = function (profile, ida) {
     window.onclose = deregister;
     window.onpagehide = deregister;
     
-    dan.init(push, pull, csmapi.get_endpoint(), mac_addr, profile, init_callback, mqtturl, ida.exec_interval);
+    dan.init(push, pull, csmapi.get_endpoint(), mac_addr, profile, init_callback, mqtturl, sa.exec_interval);
 
     function switch_to_http(){
         mqtt_client.end();
         mqtturl = undefined;
         profile['mqtt_enable'] = false;
-        dan.init(push, pull, csmapi.get_endpoint(), mac_addr, profile, init_callback, undefined, ida.exec_interval);
+        dan.init(push, pull, csmapi.get_endpoint(), mac_addr, profile, init_callback, undefined, sa.exec_interval);
     }
     http.init(switch_to_http);
 };
