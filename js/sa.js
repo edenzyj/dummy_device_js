@@ -21,12 +21,12 @@
     }
       
 /*******************************************************************/                
-    function ida_init(){
+    function sa_init(){
 	    console.log(profile.d_name);
 		$('.Device_name')[0].innerText = profile.d_name;
 	}
     var sa = {
-        'ida_init': ida_init,
+        'sa_init': sa_init,
         'iottalk_url': iottalk_url,
         'mqtt_url': mqtt_url,
         'mqtt_user': mqtt_user,
