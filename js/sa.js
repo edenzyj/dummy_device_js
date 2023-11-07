@@ -25,7 +25,7 @@
 	    console.log(profile.d_name);
 		$('.Device_name')[0].innerText = profile.d_name;
 	}
-    var ida = {
+    var sa = {
         'ida_init': ida_init,
         'iottalk_url': iottalk_url,
         'mqtt_url': mqtt_url,
@@ -33,5 +33,5 @@
         'mqtt_password': mqtt_password,
         'exec_interval': exec_interval,
     }; 
-    dai(profile,ida);     
+    dai(profile, sa);     
 });
